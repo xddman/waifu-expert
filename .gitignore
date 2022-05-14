@@ -1,8 +1,9 @@
 /node_modules/
-settings.sqlite3
 /.vscode/
-.env
+/images/
 /.idea/
+settings.sqlite3
+.env
 *.sqlite*
 *.db
 *.log
