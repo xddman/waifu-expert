@@ -27,19 +27,19 @@ client.on("messageDelete", function(message){
 
 
 client.on('messageCreate', async msg => {
-  if(msg.content.includes("!va ")){
+  if(msg.content.startsWith("!va ")){
     characters.getCharacters(msg,"", "notset").catch();
   }
-  if(msg.content.includes("!character ")){
+  if(msg.content.startsWith("!character ")){
     //characters.getAnimeCharacters(msg).catch();
   }
-  if(msg.content.includes("!manga ")){
+  if(msg.content.startsWith("!manga ")){
     mangaFind(msg, "!manga ", "notset").catch();
   }
-  if(msg.content.includes("!novel ")){
+  if(msg.content.startsWith("!novel ")){
     mangaFind(msg, "!novel ", "notset").catch();
   }
-  if(msg.content.includes("!count")){
+  if(msg.content.startsWith("!count")){
     var timer=countspeed;
     try{
       if(msg.content.includes(" ")){
@@ -67,18 +67,18 @@ client.on('messageCreate', async msg => {
    }
   }
 
-  if(msg.content.includes("!milestonecomp")){
+  if(msg.content.startsWith("!milestonecomp")){
     anilistuserlist(msg,"asd");
   }
-  if(msg.content.includes("!milestoneall")){
+  if(msg.content.startsWith("!milestoneall")){
     anilistuserlist(msg,"asd");
   }
 
-  if(msg.content.includes("!definition ")){
+  if(msg.content.startsWith("!definition ")){
     dictionary(msg, "!definition ").catch();
   }
 
-  if(msg.content.includes("!cspeed ")){
+  if(msg.content.startsWith("!cspeed ")){
     
     try{
       countspeed=Number(msg.content.split(" ")[1]);
@@ -94,7 +94,7 @@ client.on('messageCreate', async msg => {
   }
 
 
-  if(msg.content.includes("!anime ")){
+  if(msg.content.startsWith("!anime ")){
     try{
     var search = await anime(msg);
     console.log(search.title);
