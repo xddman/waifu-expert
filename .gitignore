@@ -1,0 +1,8 @@
+/node_modules/
+settings.sqlite3
+/.vscode/
+.env
+/.idea/
+*.sqlite*
+*.db
+*.log
