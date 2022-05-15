@@ -4,8 +4,8 @@ const anilistuserid = require('./anilistuserid.js');
 const Discord = require('discord.js');
 
 module.exports = async function getUserAnilistList(msg, botCommand){
-    var response=await anilistuserid(msg,"asd");
-    botCommand=msg.content.split(" ")[0];
+    var response=await anilistuserid(msg,botCommand);
+    
     var userid=response.data.User.id;
     var useravatar=response.data.User.avatar.medium;
     var username=response.data.User.name;
@@ -27,7 +27,7 @@ module.exports = async function getUserAnilistList(msg, botCommand){
         //mediaList(userId:$search, type:ANIME, status_not:PLANNING) {
         //status_not:PLANNING
         var url = 'https://graphql.anilist.co';
-        if(botCommand.includes("milestonecomp")){
+        if(botCommand.command.includes("milestonecomp")){
         if(sortType==="finished"||sortType==="FINISHED_ON_DESC"){
             sortType="FINISHED_ON_DESC";
             query = `

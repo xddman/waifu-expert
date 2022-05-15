@@ -9,16 +9,14 @@ module.exports = async function latestchap(msg, botCommand, id){
     var test;
     try{
     if(id.includes("notset")){
-        var sType="botCommand";
+        var sType="";
 
-        if(botCommand.includes("novel")){
+        if(botCommand.command.includes("novel")){
             sType="novel";
         }
-        //-----comment this out if you handle commands and want to pass just the argument-----/*
-        var str = msg.content.toString();
-        botCommand = str.split(botCommand)[1];
+
         //----------------------------------------------------------------*/
-        botCommand = botCommand.replace(/\s+/g, '+').toLowerCase();
+        botCommand = botCommand.arg.replace(/\s+/g, '+').toLowerCase();
         var series;
         
         //grab page search for the series
@@ -53,13 +51,14 @@ module.exports = async function latestchap(msg, botCommand, id){
         serieslink=serieslink[0];
         var x1 = ">";
         var y1= "</";
+        seriesname.slice(0,90);
         //seriesname = seriesname.substring(str1.indexOf(x1) + x1.length, str1.indexOf(y1));
         try{
         seriesname= seriesname.split("<i>")[1].split("</i>")[0];
         }catch(Exception){}
         test = [{
             label:""+seriesname,
-            value:""+serieslink
+            value:""+serieslink.slice(0,90)
         }];
 
         
@@ -74,13 +73,14 @@ module.exports = async function latestchap(msg, botCommand, id){
             serieslink=serieslink[0];
             x1 = ">";
             y1= "</";
+            seriesname.slice(0,90);
             //seriesname = seriesname.substring(str1.indexOf(x1) + x1.length, str1.indexOf(y1));
             try{
                 seriesname= seriesname.split("<i>")[1].split("</i>")[0];
                 }catch(Exception){}
             test.push({
                 label:""+seriesname,
-                value:""+serieslink
+                value:""+serieslink.slice(0,90)
             });
         }
         

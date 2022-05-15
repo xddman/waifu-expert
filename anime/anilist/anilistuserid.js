@@ -1,7 +1,7 @@
 const got = require('got');
 
-module.exports = async function getUserAnilistId(msg, botCommand){
-    var username=msg.content.split(" ")[1];
+module.exports = async function getUserAnilistId(msg, command){
+    var username=command.arg;
     try{
         var url = 'https://graphql.anilist.co';
         query = `
@@ -34,8 +34,7 @@ module.exports = async function getUserAnilistId(msg, botCommand){
           responseType: 'json'    
         }).json();
       
-        //return response["data"]["MediaList"]["progress"];
-        //console.log(response)
+
         console.log("user id:"+response.data.User.id);
         return response;
       

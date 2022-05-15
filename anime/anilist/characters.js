@@ -1,8 +1,8 @@
 const Discord = require('discord.js');
 const {MessageActionRow, MessageSelectMenu} = require("discord.js");
+require('dotenv').config();
 
-
-async function getCharacters(msg, botCommand, id){
+async function getCharacters(msg, responseReturn, id){
     try{
       var name="";
       try{
@@ -18,6 +18,8 @@ async function getCharacters(msg, botCommand, id){
               name = id.toString().split("|")[1]
           }catch(Exception){}
       }
+
+      
 
       var sIndex;
       if(id.includes("notset"))
@@ -83,23 +85,31 @@ async function getCharacters(msg, botCommand, id){
           };
           
           // Define the config 
-          var url = 'https://graphql.anilist.co';
-        
-          const got = require('got');
-          var response = await got.post(url, {
-                json: {
-                  query,
-                  variables
-              },
-              headers: [{
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-              }],
-              responseType: 'json'    
-          }).json();
           
+          var url = 'https://graphql.anilist.co';
+      var response;
+      if (!responseReturn?.data?.Page?.characters?.length) {
+        const got = require('got');
+        response = await got.post(url, {
+          json: {
+            query,
+            variables
+          },
+          headers: [{
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }],
+          responseType: 'json'
+        }).json();
+      } else {
+        response = responseReturn;
+      }
 
           console.log(""+response.data.Page.characters[sIndex]["name"]["userPreferred"]);
+          
+
+
+          
           test = [{
               label:""+response.data.Page.characters[sIndex]["name"]["userPreferred"].slice(0,90),
               value:"0|"+name
@@ -162,6 +172,7 @@ async function getCharacters(msg, botCommand, id){
 
           
           console.log(search.title);
+          
           const mangaembed = new Discord.MessageEmbed()
           .setColor('#0099ff')
           .setAuthor({ name: search.character, iconURL: search.charimage, url: search.url })
@@ -178,14 +189,22 @@ async function getCharacters(msg, botCommand, id){
               const row = new MessageActionRow()
                   .addComponents(
                       new MessageSelectMenu()
-                      .setCustomId("2")
+                      .setCustomId(process.env.BOT_INTERACTION_ID+2)
                       .setPlaceholder("Other Search Results")
                       .addOptions([
                           test
                       ])
                     );
 
-            return await msg.channel.send({embeds: [mangaembed], components: [row] })
+            const sent = await msg.channel.send({embeds: [mangaembed], components: [row] });
+            
+            sent.createMessageComponentCollector({
+              filter: async interaction => {
+                  await getCharacters(interaction, response, "" + interaction.values[0]).catch();
+              }
+            });
+
+            return sent;
             //return await msg.channel.send({embeds: [mangaembed]});
 
           }else{

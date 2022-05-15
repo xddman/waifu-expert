@@ -5,7 +5,7 @@ module.exports = async function getDefinition(msg, botCommand){
     
     
     try{
-        var requestedWord=msg.content.split(" ")[1];
+        var requestedWord=botCommand.arg;
         var url = 'https://api.dictionaryapi.dev/api/v2/entries/en/'+requestedWord;
         const response = await got(url);
         var body = response.body;

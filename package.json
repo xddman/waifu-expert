@@ -1,5 +1,5 @@
 {
-  "name": "Waifu-Expert",
+  "name": "server-updater",
   "version": "1.0.0",
   "description": "1",
   "main": "index.js",
@@ -27,6 +27,7 @@
     "querystring": "^0.2.1",
     "request": "^2.88.2",
     "sharp": "^0.30.3",
+    "sqlite3": "^5.0.8",
     "ytdl-core": "^4.9.0"
   }
 }
