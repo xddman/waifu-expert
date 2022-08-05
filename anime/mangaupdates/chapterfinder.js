@@ -3,6 +3,8 @@ const got = require('got');
 const cheerio = require('cheerio');
 const { data } = require('cheerio/lib/api/attributes');
 const {MessageActionRow, MessageSelectMenu} = require("discord.js");
+require('dotenv').config({ path: __dirname + '/.env' });
+
 
 module.exports = async function latestchap(msg, botCommand, id){
     var url="";
@@ -191,7 +193,7 @@ module.exports = async function latestchap(msg, botCommand, id){
         const row = new MessageActionRow()
 			.addComponents(
                 new MessageSelectMenu()
-                .setCustomId("1")
+                .setCustomId(process.env.BOT_INTERACTION_ID+1)
                 .setPlaceholder("Other Search Results")
                 .addOptions([
                     test
@@ -199,30 +201,8 @@ module.exports = async function latestchap(msg, botCommand, id){
 		    );
         
 
-                await msg.channel.send({embeds: [mangaembed], components: [row] }).then((msg) => {
-                    msg.react("▶").then(() => {
+                await msg.channel.send({embeds: [mangaembed], components: [row] });
 
-                        msg.awaitReactions(r => ['▶', '❎'].includes(r.emoji.name), {max: 1})
-                        .then(collected => {
-                                // Do stuff with the collected reaction
-                                var i=0;
-                                let r = collected.first();
-                                if (r.emoji.name == '▶'){
-                                msg.edit(mangadescembed)}
-
-                                msg.awaitReactions(r => ['▶', '❎'].includes(r.emoji.name), {max: 1})
-                                .then(collected => {
-                                        // Do stuff with the collected reaction
-                                        var i=0;
-                                        let r = collected.first();
-                                        if (r.emoji.name == '▶'){
-                                        msg.edit(mangaembed)}
-                                
-                                })
-                        
-                            })
-                        })
-                    });
         
        
         

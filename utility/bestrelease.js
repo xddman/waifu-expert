@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 
 
 
-const db=new sqlite3.Database('./utility/animeindex.db', sqlite3.OPEN_READWRITE, (err)=>{
+const db=new sqlite3.Database(__dirname+'/animeindex.db', sqlite3.OPEN_READWRITE, (err)=>{
   if (err) return console.error(err.message);
   console.log("con success");
 });

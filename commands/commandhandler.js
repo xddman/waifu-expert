@@ -20,6 +20,8 @@ async function commandHandler(msg){
         mentionUsername=mentions.user.username;
     }
 
+    var messageAuthorId = msg.author.id;
+    var messageAuthorUsername = msg.author.username;
     //Get arguments if exist
     var arg=msg.content.split(command+"")[1];
     if(mentioned===true)
@@ -34,7 +36,9 @@ async function commandHandler(msg){
         arg:arg,
         mentioned:mentioned,
         mentionId:mentionId,
-        mentionUsername:mentionUsername
+        mentionUsername:mentionUsername,
+        authorId:messageAuthorId,
+        authorUsername:messageAuthorUsername
     };
 
     return finalCommand;
