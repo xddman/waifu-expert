@@ -12,7 +12,7 @@ ANILIST_TOKEN=""
 ```
 
 Commands:
-
+```
 &setmyanilist [AnilistUsername] - sets user anilist, adds it to sqlite database and bot follows the user on anilist.
 &deletemyanilist - removes users anilist and unfollows them.
 &ratings [Anime] - shows ratings of the specified anime for the users that the bot follows (&setmyanilist).
@@ -28,6 +28,6 @@ Commands:
 &manga [Manga Name] - shows some information about the specified manga like latest fantranslated chapter, latest official eng/jp released volumes, anime starting/endings.
 &novel [Novel Name] - same as manga just for novels.
 ![Screenshot](https://prnt.sc/Lu3dnavar1x0)
-
+```
 
 
