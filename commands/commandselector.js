@@ -16,7 +16,7 @@ const bestrelease = require('../utility/bestrelease.js');
 //const imgProcessing = require('./imageprocessing.js');
 
 
-async function commandSelector(msg){
+async function commandSelector(msg, client){
     var commandArgs = await commandHandler.commandHandler(msg).catch((Exception) => {console.log(Exception)});
     const prefix = await process.env.BOT_PREFIX;
 
@@ -44,19 +44,19 @@ async function commandSelector(msg){
             anilistuserlist(msg, commandArgs);
             break;
         case "definition":
-            dictionary(msg, "=definition ").catch((Exception) => {console.log(Exception)});
+            dictionary(msg, "&definition ").catch((Exception) => {console.log(Exception)});
             break;
         case "cspeed":
             //to be added
             break;
-        case "":
-            //animeinfo.getAnime(msg,commandArgs,1, "About").catch((Exception) => {console.log(Exception)});
+        case "rating":
+            animeratings.getRatings(msg,commandArgs,0,0).catch((Exception) => {console.log(Exception)});
             break;
         case "bestrelease":
             bestrelease.getBestRelease(msg, commandArgs).catch((Exception) => {console.log(Exception)});
             break;
         case "":
-            //animeinfo.getAnime(msg,commandArgs,1, process.env.BOT_INTERACTION_ID+"AnimeRatingsCMD").catch((Exception) => {console.log(Exception)});
+           // await followuser.checkUserServers(client).catch((Exception) => {console.log(Exception)});
             break;
         case "characters":
             characterlist.getCharacterList(msg,commandArgs).catch((Exception) => {console.log(Exception)});

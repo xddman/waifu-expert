@@ -19,17 +19,17 @@ async function followUserAnilist(msg, command) {
     console.log("======>" + anilistUserId);
 
 
-    
+
 
     var checkDbForUser = await CheckAnilistToDatabase(command.authorId, command);
-    if(checkDbForUser<1){
-        await AddAnilistToDatabase(command.arg,command);
-    }else{
+    if (checkDbForUser < 1) {
+        await AddAnilistToDatabase(command.arg, command, msg);
+    } else {
         console.log("Anilist already set as ...'s anilist");
     }
 
     var isUserFollowed = await isFollowed(anilistUserId);
-    if (isUserFollowed === false&&checkDbForUser<1) {
+    if (isUserFollowed === false && checkDbForUser < 1) {
 
 
         var query = `
@@ -124,7 +124,7 @@ async function isFollowed(id) {
 async function CheckAnilistToDatabase(authorId, command) {
     const db = await sqlite.open({
         filename: __dirname + '/anilist.db',
-        driver:   sqlite3.Database
+        driver: sqlite3.Database
     });
 
     var name = authorId;
@@ -133,9 +133,9 @@ async function CheckAnilistToDatabase(authorId, command) {
     var sq = "select COUNT(discord_id) from anilist_users where discord_id=?";
     const result = await db.all(sq, [name]);
 
-    
-    
-    
+
+
+
     counter = result[0]["COUNT(discord_id)"];
     db.close();
     return counter;
@@ -146,24 +146,24 @@ async function CheckAnilistToDatabase(authorId, command) {
 
 }
 
-async function AddAnilistToDatabase(anilistUsername, command) {
+async function AddAnilistToDatabase(anilistUsername, command, msg) {
     const db = await sqlite.open({
         filename: __dirname + '/anilist.db',
-        driver:   sqlite3.Database
+        driver: sqlite3.Database
     });
 
-    console.log("inserting "+anilistUsername);
+    console.log("inserting " + anilistUsername);
     //var name = authorId;
 
     var counter = 0;
-    var sq = "insert or ignore into anilist_users (discord_id, discord_username, anilist_username) values (?,?,?)";
-    await db.run(sq, [command.authorId, command.authorUsername, anilistUsername], async (err, rows) => {
+    var sq = "insert or ignore into anilist_users (discord_id, discord_username, anilist_username, users_servers) values (?,?,?,?)";
+    await db.run(sq, [command.authorId, command.authorUsername, anilistUsername, msg.guildId.toString()], async (err, rows) => {
         if (err) return console.error(err.message);
     });
 
     db.close();
     return 0;
-    
+
 
 
 
@@ -172,7 +172,7 @@ async function AddAnilistToDatabase(anilistUsername, command) {
 async function DeleteAnilistToDatabase(msg, command) {
     const db = await sqlite.open({
         filename: __dirname + '/anilist.db',
-        driver:   sqlite3.Database
+        driver: sqlite3.Database
     });
 
     var sq = "select COUNT(discord_id),anilist_username from anilist_users where discord_id=?";
@@ -180,15 +180,15 @@ async function DeleteAnilistToDatabase(msg, command) {
 
     counter = result[0]["COUNT(discord_id)"];
 
-    
-    if(counter>0){
-        console.log("deleting "+command.authorUsername);
+
+    if (counter > 0) {
+        console.log("deleting " + command.authorUsername);
 
         sq = "delete from anilist_users where discord_id=?";
         await db.run(sq, [command.authorId]);
         db.close();
 
-        command.arg=result[0].anilist_username;
+        command.arg = result[0].anilist_username;
         var anilistUserId = await anilistuserid(msg, command);
         anilistUserId = anilistUserId.data.User.id;
 
@@ -204,13 +204,13 @@ async function DeleteAnilistToDatabase(msg, command) {
         var variables = {
             userId: anilistUserId,
         };
-    
+
         var token = "Bearer " + process.env.ANILIST_TOKEN;
         // Define the config 
         var response;
         var url = 'https://graphql.anilist.co';
         const got = require('got');
-    
+
         response = await got.post(url, {
             json: {
                 query,
@@ -232,20 +232,60 @@ async function DeleteAnilistToDatabase(msg, command) {
 
 
         return msg.reply("Unfollowed successfully..");
-    }else{
+    } else {
         db.close();
         return msg.reply("Failed. You are not followed.");
     }
-    
+
 
 
 
 }
+
+async function checkUserServers(client) {
+
+
+
+
+    const db = await sqlite.open({
+        filename: __dirname + '/anilist.db',
+        driver: sqlite3.Database
+    });
+
+    var discordId;
+    var sq = "select cast(discord_id as TEXT) as ID from anilist_users";
+    const result = await db.all(sq);
+    var i=0;
+    while(i<result.length){
+    
+        discordId = result[i].ID;
+        //discordId=discordId-11;
+
+        var ServerList = await client.guilds.cache.filter((u) => u.members.cache.get(discordId));
+        var serverString = "";
+        ServerList.forEach(key => {
+            //console.log(key.id);
+            serverString = serverString + key.id + ",";
+        });
+
+
+        sq = "update anilist_users set users_servers=? where discord_id=?";
+        await db.run(sq, [serverString, discordId], async (err, rows) => {
+            if (err) return console.error(err.message);
+        });
+    i++
+    }
+    db.close();
+    return 0;
+
+}
+
 
 module.exports = {
     followUserAnilist,
     isFollowed,
     CheckAnilistToDatabase,
     AddAnilistToDatabase,
-    DeleteAnilistToDatabase
+    DeleteAnilistToDatabase,
+    checkUserServers
 }

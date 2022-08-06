@@ -3,7 +3,7 @@ const client = new Discord.Client({
   intents: 32767,
 });
 
-const mangaFind = require('./anime/mangaupdates/chapterfinder.js');
+const followuser= require('./anime/anilist/followuser.js');
 const youdl = require('./utility/youtubedl.js');
 const characters = require('./anime/anilist/voiceactors.js');
 const commander = require('./commands/commandselector.js');
@@ -16,7 +16,11 @@ var countspeed = 1;
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  //imgProcessing("asd", "!manga ", "notset").catch();
+  var minutes = 120, the_interval = minutes * 60 * 1000;
+  followuser.checkUserServers(client).catch((Exception) => {console.log(Exception)});
+  setInterval(function() {
+    followuser.checkUserServers(client).catch((Exception) => {console.log(Exception)});
+  }, the_interval);
 });
 
 
@@ -28,7 +32,13 @@ client.on("messageDelete", function (message) {
 client.on('messageCreate', async msg => {
   
   if (msg.content.startsWith(process.env.BOT_PREFIX)) {
-    await commander.commandSelector(msg).catch();
+    await commander.commandSelector(msg, client).catch();
+    //var a = client.guilds.cache.filter((u) => u.members.cache.get(msg.author.id));
+    //console.log(a);
+    /*if(msg.content.includes("serverlist"))
+    client.guilds.cache.forEach(guild => {
+      console.log(`${guild.name} | ${guild.id}`);
+    })*/
   }
   
 
