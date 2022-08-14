@@ -5,7 +5,8 @@ async function commandHandler(msg){
 
     //Get the command
     var command=msg.content.split(" ")[0];
-    console.log("Ran: '"+command+"'");
+    
+
 
 
     //Get mentions if exist
@@ -28,11 +29,22 @@ async function commandHandler(msg){
         arg=arg.replace("<@"+mentions.user.id+">",'');
     
     arg=arg.replace(/\s\s+/g, ' ').trim();
-    console.log("Args: '"+arg+"'");
+    
 
+    var flag=null;
+    if(command.includes("-")){
+        flag = command.split("-")[1];
+        command = command.split("-")[0];
+    }
+
+    console.log("Ran: '"+command+"'");
+    console.log("Flags: '"+flag+"'");
+    console.log("Args: '"+arg+"'");
+    console.log("Author: '"+messageAuthorUsername+"'");
     //Pack it all up nicely and return it
     var finalCommand = {
         command: command,
+        flag: flag,
         arg:arg,
         mentioned:mentioned,
         mentionId:mentionId,

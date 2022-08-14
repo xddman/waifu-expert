@@ -5,9 +5,20 @@ const got = require('got');
 const imageManipulation = require("./imageManipulation.js")
 
 async function getCharacterList(msg, args) {
+
+  var mediaType="ANIME"
+  if(args?.flag!=null){
+    if(args?.flag==="a")
+      mediaType="ANIME";
+    else if(args?.flag==="m")
+      mediaType="MANGA";
+    else
+      mediaType="ANIME";
+  }
+
   var query = `
     query ($search: String){
-        Media(type:ANIME, sort:SEARCH_MATCH, search:$search){
+        Media(type:`+mediaType+`, sort:SEARCH_MATCH, search:$search){
           id
           format
         	status

@@ -4,12 +4,20 @@ const got = require('got');
 async function getAnimeSearch(command) {
 
         var search=command.arg;
-
+        var mediaType="ANIME"
+        if(command?.flag!=null){
+          if(command?.flag==="a")
+            mediaType="ANIME";
+          else if(command?.flag==="m")
+            mediaType="MANGA";
+          else
+            mediaType="ANIME";
+        }
       
       
         var query = `
         query ($search: String){
-          Media(type:ANIME, search:$search){
+          Media(type:`+mediaType+`, search:$search){
             id
             bannerImage
             siteUrl
