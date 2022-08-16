@@ -175,7 +175,7 @@ async function getRatings(msg, command, anime, currentPage) {
                 progress = "Dropped";
                 break;
             case "CURRENT":
-                progress = "Ep " + ratingsCache[serverID][anime.id][iReplacer].progress.toString();
+                progress = "Ep " + filteredRatings[serverID][anime.id][iReplacer].progress.toString();
                 break;
             default:
                 progress = "Planned"
