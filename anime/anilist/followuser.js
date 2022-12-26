@@ -23,7 +23,7 @@ async function followUserAnilist(msg, command) {
 
     var checkDbForUser = await CheckAnilistToDatabase(command.authorId, command);
     if (checkDbForUser < 1) {
-        await AddAnilistToDatabase(command.arg, command, msg);
+        await AddAnilistToDatabase(command.arg, command, msg,anilistUserId);
     } else {
         console.log("Anilist already set as ...'s anilist");
     }
@@ -146,7 +146,7 @@ async function CheckAnilistToDatabase(authorId, command) {
 
 }
 
-async function AddAnilistToDatabase(anilistUsername, command, msg) {
+async function AddAnilistToDatabase(anilistUsername, command, msg, anilistId) {
     const db = await sqlite.open({
         filename: __dirname + '/anilist.db',
         driver: sqlite3.Database
@@ -156,8 +156,8 @@ async function AddAnilistToDatabase(anilistUsername, command, msg) {
     //var name = authorId;
 
     var counter = 0;
-    var sq = "insert or ignore into anilist_users (discord_id, discord_username, anilist_username, users_servers) values (?,?,?,?)";
-    await db.run(sq, [command.authorId, command.authorUsername, anilistUsername, msg.guildId.toString()], async (err, rows) => {
+    var sq = "insert or ignore into anilist_users (discord_id, discord_username, anilist_username, anilist_id, users_servers) values (?,?,?,?,?)";
+    await db.run(sq, [command.authorId, command.authorUsername, anilistUsername, anilistId, msg.guildId.toString()], async (err, rows) => {
         if (err) return console.error(err.message);
     });
 

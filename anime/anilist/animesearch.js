@@ -10,6 +10,8 @@ async function getAnimeSearch(command) {
             mediaType="ANIME";
           else if(command?.flag==="m")
             mediaType="MANGA";
+          else if(command?.flag==="ln")
+            mediaType="MANGA";
           else
             mediaType="ANIME";
         }
@@ -17,59 +19,69 @@ async function getAnimeSearch(command) {
       
         var query = `
         query ($search: String){
-          Media(type:`+mediaType+`, search:$search){
-            id
-            bannerImage
-            siteUrl
-            title {
-              english
-              userPreferred
+          Page (page: 1, perPage: 10) {
+            pageInfo {
+              total
+              currentPage
+              lastPage
+              hasNextPage
+              perPage
             }
-            popularity
-            studios {
-              nodes{
-                name
-              }
+            media (search: $search, type:`+mediaType+`) {
+                    id
+                    bannerImage
+                    siteUrl
+                    title {
+                      english
+                      userPreferred
+                    }
+                    popularity
+                    studios {
+                      nodes{
+                        name
+                      }
+                    }
+                    description
+                    nextAiringEpisode {
+                      id
+                      airingAt
+                      timeUntilAiring
+                      episode
+                    }
+                    characters {
+                      nodes{
+                        name {
+                          userPreferred
+                        }
+                        image {
+                          medium
+                        }
+                      }
+                    }
+                    genres
+                    source
+                    favourites
+                    meanScore
+                    averageScore
+                    episodes
+                    coverImage{
+                      large
+                      medium
+                    }
+                    seasonYear
+                    startDate {
+                      year
+                      month
+                      day
+                    }
+                    endDate {
+                      year
+                      month
+                      day
+                    }
+                    status
+                    format
             }
-            description
-            nextAiringEpisode {
-              id
-              airingAt
-              timeUntilAiring
-              episode
-            }
-            characters {
-              nodes{
-                name {
-                  userPreferred
-                }
-                image {
-                  medium
-                }
-              }
-            }
-            genres
-            source
-            favourites
-            meanScore
-            averageScore
-            episodes
-            coverImage{
-              large
-              medium
-            }
-            seasonYear
-            startDate {
-              year
-              month
-              day
-            }
-            endDate {
-              year
-              month
-              day
-            }
-            status
           }
         }
             `;
@@ -82,7 +94,7 @@ async function getAnimeSearch(command) {
               search=search.split("/")[0];
               query = `
               query ($search: String){
-                Media(type:ANIME, search:$search){
+                Media(type:`+mediaType+`, search:$search){
                   id
                   bannerImage
                   siteUrl
@@ -162,6 +174,29 @@ async function getAnimeSearch(command) {
           responseType: 'json'
         }).json();
       
+        if(command?.flag==="ln"){
+          var i=0;
+          while(i<10){
+            if(response.data.Page.media[i].format==='NOVEL'){
+              response["data"]["Media"]=response.data.Page.media[i];
+              break;
+            }
+            i++;
+          }
+        }else if(command?.flag==="m"){
+          var i=0;
+          while(i<10){
+            if(response.data.Page.media[i].format==='MANGA'){
+              response["data"]["Media"]=response.data.Page.media[i];
+              break;
+            }
+            i++;
+          }
+        }
+        else{
+          response["data"]["Media"]=response.data.Page.media[0];
+        }
+
         var animeid = response["data"]["Media"]["id"];
         var siteUrl = response["data"]["Media"]["siteUrl"];
         var averageScore = response["data"]["Media"]["averageScore"];
@@ -186,6 +221,7 @@ async function getAnimeSearch(command) {
           siteUrl: siteUrl,
           averageScore:averageScore,
           meanScore:meanScore,
+          type:mediaType,
           all:response
         };
 

@@ -8,7 +8,9 @@ const followuser = require('./followuser.js');
 const sqlite3 = require('sqlite3').verbose();
 const sqlite = require('sqlite');
 const { filter } = require('domutils');
-
+const anilistgetuserfollowers= require('./anilistgetuserfollowers.js');
+const { head } = require('request');
+//FONTCONFIG_FILE={ path: __dirname + "/fonts/fonts.conf"};
 
 var pageCache = {};
 var ratingsCache = {};
@@ -17,12 +19,12 @@ var filteredRatings={};
 async function cacheAnimeRatings(msg, command) {
     var anime = await search.getAnimeSearch(command);
 
-
-
-    var query = `
+    var query="";
+    if(command?.command?.toString()?.substring(1)==="ratings"||command?.command?.toString()?.substring(1)==="rating"){
+    query = `
         query ($mediaId: Int, $page: Int) {
             Page(page: $page, perPage:50) {
-              mediaList(mediaId: $mediaId, isFollowing: true, sort:SCORE_DESC) {
+              mediaList(mediaId: $mediaId, isFollowing: true, sort:[SCORE_DESC,PROGRESS_DESC,STATUS]) {
                 id
                 user{
                   name
@@ -37,6 +39,7 @@ async function cacheAnimeRatings(msg, command) {
                 score(format:POINT_10_DECIMAL)
                 status
                 progress
+                repeat
               }
               pageInfo{
                 total
@@ -48,7 +51,43 @@ async function cacheAnimeRatings(msg, command) {
             }
           }
         `;
-
+        }
+        else if(command?.command?.toString()?.substring(1)==="myratings"){
+           var userIdList = await anilistgetuserfollowers.sortUserIds(msg, command);
+            if(userIdList===0)
+                return 0;
+           query = `
+           query ($mediaId: Int, $page: Int) {
+            Page(page: $page, perPage:50) {
+              mediaList(mediaId: $mediaId, userId_in:[`+userIdList+`], sort:[SCORE_DESC,PROGRESS_DESC,STATUS]) {
+                id
+                user{
+                  name
+                }
+                media {
+                  id
+                  title {
+                    english
+                    userPreferred
+                  }
+                }
+                score(format:POINT_10_DECIMAL)
+                status
+                progress
+                repeat
+              }
+              pageInfo{
+                total
+                perPage
+                currentPage
+                lastPage
+                hasNextPage
+              }
+            }
+          }
+           `;
+        }
+        
     var currentPage = 1;
     const got = require('got');
     var url = 'https://graphql.anilist.co';
@@ -56,7 +95,7 @@ async function cacheAnimeRatings(msg, command) {
     var response = [];
     response["data"] = { Page: { pageInfo: { hasNextPage: true } } };
 
-
+    
     while (response.data.Page.pageInfo.hasNextPage) {
         try {
             var variables = {
@@ -65,7 +104,7 @@ async function cacheAnimeRatings(msg, command) {
             };
 
 
-            response = await got.post(url, {
+           var response1 = await got.post(url, {
                 json: {
                     query,
                     variables
@@ -73,15 +112,28 @@ async function cacheAnimeRatings(msg, command) {
                 headers: {
                     "Authorization": token,
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'accept-encoding':'gzip, deflate, br'
                 },
                 responseType: 'json'
-            }).json();
-            var serverID=msg.guildId.toString();
+            });
+            var headers = response1.headers;
+            response=response1.body;
+            try{
+            console.log("x-ratelimit-remaining: "+headers["x-ratelimit-remaining"]);
+            }catch(exc){
+                console.log(exc);
+                console.log(headers);
+            }
+
+            
+            var serverID=msg.id.toString();//msg.guildId.toString();
             var tempCache = response.data.Page.mediaList;
-            ratingsCache[serverID]={};
-            if (currentPage === 1)
+            
+            if (currentPage === 1){
+                ratingsCache[serverID]={};
                 ratingsCache[serverID][anime.id] = tempCache;
+            }
             else
                 ratingsCache[serverID][anime.id] = [...ratingsCache[serverID][anime.id], ...tempCache];
 
@@ -101,13 +153,22 @@ async function cacheAnimeRatings(msg, command) {
 async function getRatings(msg, command, anime, currentPage) {
 
 
-    var serverID=msg.guildId.toString();
+    
     var first = 0;
     if (currentPage === 0) {
         anime = await cacheAnimeRatings(msg, command);
+        if(anime===0)
+            return msg.reply("Failed. You are not followed. To add your anilist, use &setmyanilist YourAnilist.");;
         currentPage = 1;
     } else
         first = 1;
+
+    var serverID
+        if (first === 0) {
+            serverID=msg.id.toString();//msg.guildId.toString();
+        } else {
+            serverID=msg.message.id.toString();//msg.guildId.toString();
+        }
 
     
 
@@ -127,19 +188,25 @@ async function getRatings(msg, command, anime, currentPage) {
     
     var Pages;
 
-    
+    var averageType="List";
     if(command?.command?.toString()?.substring(1)==="ratings"){
-        filteredRatings = await serverRatingsSorter(anime, msg.guildId.toString());
+        filteredRatings1 = await serverRatingsSorter(anime, msg.guildId.toString(), msg.id.toString());
+        filteredRatings={...filteredRatings,...filteredRatings1};
+        //averageType="Server"
         
     }
-    else if(command?.command?.toString()?.substring(1)==="rating"){
-        filteredRatings=ratingsCache;
-        filteredRatings[serverID]["length"]=filteredRatings[serverID][anime.id].length;
+    else if(command?.command?.toString()?.substring(1)==="rating"||command?.command?.toString()?.substring(1)==="myratings"){
+        filteredRatings[serverID]={...filteredRatings[serverID], ...ratingsCache[serverID]};
+        filteredRatings[serverID][anime.id]["length"]=filteredRatings[serverID][anime.id].length;
+        //if(command?.command?.toString()?.substring(1)==="myratings")
+            //averageType="User"
+       // else
+           // averageType="Global";
         
     }
     
     
-    Pages = Math.ceil(filteredRatings[serverID].length / 11);
+    Pages = Math.ceil(filteredRatings[serverID][anime.id].length / 11);
 
 
     
@@ -148,10 +215,11 @@ async function getRatings(msg, command, anime, currentPage) {
 
 
     //var test1=filteredRatings.length;
+    var epch="Ep ";
+    if(anime.type==="MANGA")
+        epch="Ch "
 
-
-
-    while (i < filteredRatings[serverID].length - (personalCurrentPage * 11) && i < 11) {
+    while (i < filteredRatings[serverID][anime.id].length - (personalCurrentPage * 11) && i < 11) {
 
         var iReplacer = i + (personalCurrentPage * 11);
         i++;
@@ -164,32 +232,80 @@ async function getRatings(msg, command, anime, currentPage) {
         }
 
         var progress;
+        var progresse;
         switch (filteredRatings[serverID][anime.id][iReplacer].status) {
             case "COMPLETED":
                 progress = "Comp";
+                progresse = "";//🗸
                 break;
             case "PAUSED":
-                progress = "Paused";
+                if(filteredRatings[serverID][anime.id][iReplacer]?.progress>0){
+                    progress = epch+filteredRatings[serverID][anime.id][iReplacer]?.progress?.toString();//+" Ep";
+                    progresse = '';//Ⅱ
+                }
+                else{
+                    progress="Paused";
+                    progresse = "";
+                }
                 break;
             case "DROPPED":
-                progress = "Dropped";
+                if(filteredRatings[serverID][anime.id][iReplacer]?.progress>0){
+                    progress = epch+filteredRatings[serverID][anime.id][iReplacer]?.progress?.toString();//+" Ep";
+                    progresse = '';}//"";}//☓
+                else{//❌×✖χ
+                    progress="Dropped";
+                    progresse = '';//
+                }
                 break;
             case "CURRENT":
-                progress = "Ep " + filteredRatings[serverID][anime.id][iReplacer].progress.toString();
+                if(filteredRatings[serverID][anime.id][iReplacer]?.progress>0){
+                    progress = epch+filteredRatings[serverID][anime.id][iReplacer]?.progress?.toString();//+" Ep";
+                    progresse = "";//▶
+                }
+                else{
+                    progress="Current";
+                    progresse = "";//⏵
+                }
                 break;
             default:
-                progress = "Planned"
-                break;
+                if(filteredRatings[serverID][anime.id][iReplacer]?.progress>0){
+                    progress = epch+filteredRatings[serverID][anime.id][iReplacer]?.progress?.toString();//+" Ep";
+                    progresse = "";//📜
+                }
+                else{
+                    progress="Planning";//
+                    progresse = "";}
+                break;//💭
+        }
+
+        var rewatche="";
+        var rewatch="";
+        if(filteredRatings[serverID][anime.id][iReplacer]?.repeat>0){
+            rewatch=filteredRatings[serverID][anime.id][iReplacer]?.repeat?.toString().substr(0, 2);
+            
+            
+            svg = svg + `
+            <text fill="#ffffff" font-size="30" font-family="'fa-solid'"
+            x="520" y="${j + spacing * i}">${rewatche}</text>
+
+            <text fill="#ffffff" font-size="35" font-family="Verdana"
+            x="560" y="${j + spacing * i}" text-anchor="start">${rewatch}</text>`;
         }
 
         svg = svg + `
                 <text fill="#ffffff" font-size="35" font-family="Verdana"
-                    x="5" y="${j + spacing * i}">${filteredRatings[serverID][anime.id][iReplacer].user.name}:</text>
-                <text fill="#ffffff" font-size="35" font-family="Verdana"
-                    x="410" y="${j + spacing * i}" >${progress}</text>
+                    x="5" y="${j + spacing * i}">${filteredRatings[serverID][anime.id][iReplacer].user.name.substr(0, 13)}:</text>
+                <text fill="#ffffff" font-size="35" font-family="'fa-solid'"
+                    x="320" y="${j + spacing * i}">${progresse}</text>
                 <text fill="#ffffff" font-size="35" font-family="Verdana"
                     x="740" y="${j + spacing * i}" text-anchor="end">${scores}</text>
             `;
+        //progress x=400
+        
+            svg = svg + `<text fill="#ffffff" font-size="35" font-family="Verdana"
+            x="370" y="${j + spacing * i}" text-anchor="start">${progress}</text>`;
+        //x=580
+        
 
 
 
@@ -216,7 +332,7 @@ async function getRatings(msg, command, anime, currentPage) {
 
     svg = svg + `
         <text fill="#ffffff" font-size="30" font-family="Verdana"
-            x="220" y="25">Server Average:</text>
+            x="220" y="25">`+averageType+` Average:</text>
 
         <text fill="#ffffff" font-size="30" font-family="Verdana"
             x="220" y="70">${serverAverage}</text>
@@ -276,6 +392,7 @@ async function getRatings(msg, command, anime, currentPage) {
         row.components[0].setDisabled(true);
     if (currentPage > Pages - 1)
         row.components[1].setDisabled(true);
+  
 
 
 
@@ -291,6 +408,14 @@ async function getRatings(msg, command, anime, currentPage) {
     if (first === 0) {
         sent = await msg.channel.send({ embeds: [exampleEmbed], components: [row], files: [attachment] });
         await sent;
+        filteredRatings[sent.id]=filteredRatings[serverID];
+        filteredRatings = Object.keys(filteredRatings).filter(key =>
+            key !== msg.id).reduce((obj, key) =>
+            {
+                obj[key] = filteredRatings[key];
+                return obj;
+            }, {}
+        );
         pageCache[sent.id] = { page: currentPage, anime: anime };
     } else {
         sent = await msg.update({ embeds: [exampleEmbed], components: [row], files: [attachment] }).catch((Exception) => { console.log(Exception) });
@@ -327,7 +452,7 @@ async function handleRatingsInteractions(msg, command, anime, currentPage) {
 
 }
 
-async function serverRatingsSorter(anime, serverId) {
+async function serverRatingsSorter(anime, serverId, msgId) {
 
     const db = await sqlite.open({
         filename: __dirname + '/anilist.db',
@@ -339,9 +464,10 @@ async function serverRatingsSorter(anime, serverId) {
     var sq = "select anilist_username from anilist_users where users_servers like ?";
     const result = await db.all(sq, [serverIdSQL]);
     var filteredRatings = {};
+    serverId=msgId;
     filteredRatings[serverId]={};
     filteredRatings[serverId][anime.id] = {};
-    filteredRatings[serverId]["length"]=0;
+    filteredRatings[serverId][anime.id]["length"]=0;
 
     var i = 0;
     var j = 0;
@@ -359,7 +485,7 @@ async function serverRatingsSorter(anime, serverId) {
 
         i++
     }
-    filteredRatings[serverId]["length"]=z;
+    filteredRatings[serverId][anime.id]["length"]=z;
     
     db.close();
     //console.log(filteredRatings);
@@ -368,6 +494,10 @@ async function serverRatingsSorter(anime, serverId) {
 
 
 }
+
+
+
+
 module.exports = {
     getRatings,
     cacheAnimeRatings,

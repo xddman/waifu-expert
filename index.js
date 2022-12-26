@@ -5,10 +5,11 @@ const client = new Discord.Client({
 
 const followuser= require('./anime/anilist/followuser.js');
 const youdl = require('./utility/youtubedl.js');
-const characters = require('./anime/anilist/voiceactors.js');
 const commander = require('./commands/commandselector.js');
 const interactionhandler = require("./commands/interactionhandler.js");
 const process = require('node:process');
+
+
 require('dotenv').config({path: __dirname+'/.env'});
 
 var countspeed = 1;
@@ -21,6 +22,15 @@ client.on('ready', () => {
   setInterval(function() {
     followuser.checkUserServers(client).catch((Exception) => {console.log(Exception)});
   }, the_interval);
+
+
+
+
+  let commands;
+  commands=client.application?.commands;
+  //commands?.create({name: 'ping1', description: 'replies with pong.'});
+
+
 });
 
 
@@ -33,25 +43,10 @@ client.on('messageCreate', async msg => {
   
   if (msg.content.startsWith(process.env.BOT_PREFIX)) {
     await commander.commandSelector(msg, client).catch();
-    //var a = client.guilds.cache.filter((u) => u.members.cache.get(msg.author.id));
-    //console.log(a);
-    /*if(msg.content.includes("serverlist"))
-    client.guilds.cache.forEach(guild => {
-      console.log(`${guild.name} | ${guild.id}`);
-    })*/
   }
   
 
 
-  if(msg.content.startsWith("=collect")){
-    var asd="asdasdasd";
-    msg.channel.send("test");
-    const answer = await msg.createMessageComponentCollector({ time: 15_000 }, asd);
-
-    console.log(answer);
-
-
-  }
 
 
 
@@ -65,10 +60,7 @@ client.on('messageCreate', async msg => {
 
 
 
-
-
-
-  if (msg.content.startsWith("!count")) {
+  if (msg.content.startsWith(process.env.BOT_PREFIX+"count")) {
     var timer = countspeed;
     try {
       if (msg.content.includes(" ")) {
@@ -96,7 +88,7 @@ client.on('messageCreate', async msg => {
     }
   }
 
-  if (msg.content.startsWith("!cspeed ")) {
+  if (msg.content.startsWith(process.env.BOT_PREFIX+"cspeed ")) {
 
     try {
       countspeed = Number(msg.content.split(" ")[1]);
@@ -138,8 +130,6 @@ client.on('interactionCreate', async interaction => {
 
 
 
-
-
 });
 
 
@@ -150,9 +140,7 @@ function sleep(ms) {
   });
 }
 
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
-}
+
 
 
 

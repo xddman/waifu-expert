@@ -95,7 +95,7 @@ async function createCharactersImage(characters, response) {
     var svg = `
         <svg width="${width}" height="${height}">
         `
-    const monthNames = ["January", "February", "March", "April", "May", "June",
+    const monthNames = ["null","January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
     i = 0;

@@ -2,7 +2,6 @@ require('dotenv').config({path: __dirname+'/.env'});
 const Discord = require('discord.js');
 
 const commandHandler = require('./commandhandler.js');
-const help = require('../utility/help.js');
 const mangaFind = require('../anime/mangaupdates/chapterfinder.js');
 const youdl = require('../utility/youtubedl.js');
 const anilistuserlist = require('../anime/anilist/anilistuserlist.js');
@@ -13,14 +12,10 @@ const anilistuserinfo = require('../anime/anilist/anilistuserinfo.js');
 const animeinfo = require('../anime/anilist/animeinfo.js');
 const animeratings = require('../anime/anilist/animeratings.js');
 const followuser = require('../anime/anilist/followuser.js');
-const getanilistid = require('../anime/anilist/anilistuserid.js');
 const bestrelease = require('../utility/bestrelease.js');
-const anilistgetuserfollowers= require('../anime/anilist/anilistgetuserfollowers.js');
-//const imgProcessing = require('./imageprocessing.js');
-//const hungergames = require("../games/hungergames/hungerGames.js")
 
 
-async function commandSelector(msg, client){
+async function slashCommandSelector(msg, client){
     var commandArgs = await commandHandler.commandHandler(msg).catch((Exception) => {console.log(Exception)});
     const prefix = await process.env.BOT_PREFIX;
 
@@ -77,18 +72,9 @@ async function commandSelector(msg, client){
         case "ratings":
             animeratings.getRatings(msg,commandArgs,0,0).catch((Exception) => {console.log(Exception)});
             break;
-        case "getanilistid":
-                await getanilistid(msg, commandArgs).catch((Exception) => {console.log(Exception)});
+        case "hungergames":
                 //hungergames.hungerGames(msg).catch((Exception) => {console.log(Exception)});
                 break;
-        case "myratings":
-                animeratings.getRatings(msg,commandArgs,0,0).catch((Exception) => {console.log(Exception)});
-                //await anilistgetuserfollowers.sortUserIds(msg, commandArgs).catch((Exception) => {console.log(Exception)});
-                //hungergames.hungerGames(msg).catch((Exception) => {console.log(Exception)});
-                break;
-        case "help":
-            help.getHelp(msg, commandArgs).catch((Exception) => {console.log(Exception)});
-            break;
         default:
             console.log("Unknown Command")
             break;
@@ -96,5 +82,5 @@ async function commandSelector(msg, client){
 }
 
 module.exports = {
-    commandSelector
+    slashCommandSelector
 }

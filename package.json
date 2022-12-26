@@ -25,12 +25,14 @@
     "got": "^11.8.2",
     "jimp": "^0.16.0",
     "node-fetch": "^2.6.7",
+    "path": "^0.12.7",
     "postman-request": "^2.88.1-postman.30",
     "querystring": "^0.2.1",
     "request": "^2.88.2",
     "sharp": "^0.30.6",
     "sqlite": "^4.1.2",
     "sqlite3": "^5.0.8",
+    "weighted-random": "^0.1.0",
     "ytdl-core": "^4.9.0"
   }
 }

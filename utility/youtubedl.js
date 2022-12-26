@@ -30,7 +30,7 @@ module.exports = async function ytdler(msg, botCommand){
     console.log(title);
     const stream = ytdl(url, {quality: quality },{ filter: filter })
 
-    stream.pipe(fs.createWriteStream(title+exten));
+    stream.pipe(fs.createWriteStream( __dirname+ '/'+title+exten));
 
     stream.on('response', function(res) {
         var totalSize = res.headers['content-length'];
@@ -47,15 +47,12 @@ module.exports = async function ytdler(msg, botCommand){
           if(tt=='!ytdlsave '){
             return await msg.channel.send("Request is downloaded");
           }else{
-            try{
-              return await msg.channel.send("Requested: "+title, {
-              files: [
-                  "./"+title+exten
-              ]
-              }).then((msg) => {
-                fs.unlinkSync(title+exten);
+            try{           //msg.channel.send({ embeds: [exampleEmbed], components: [row], files: [attachment] });
+              var attachment = await new Discord.MessageAttachment(__dirname+ "/"+title+exten);
+              return await msg.channel.send({content:"Requested: "+title, files: [attachment]}).then((msg) => {
+                fs.unlinkSync(__dirname+ "/"+title+exten);
               });
-            }catch(err){return msg.channel.send(err);}
+            }catch(err){return console.log(err);}
           }
         });
       });

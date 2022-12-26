@@ -1,0 +1,72 @@
+{
+  "name": "Default",
+  "events": {
+    "deadly": [
+      {
+        "people": 1,
+        "text": "P1 falls off a cliff",
+        "deadly": 1,
+        "chance": 30
+      },
+      {
+        "people": 2,
+        "text": "P1 and P2 fall off a cliff",
+        "deadly": 2,
+        "chance": 10
+      },
+      {
+        "people": 3,
+        "text": "P1, P2 and P3 fall off a cliff.",
+        "deadly": 3,
+        "chance": 5
+      },
+      {
+        "people": 4,
+        "text": "P1, P2, P3 and P4 fall off a cliff.",
+        "deadly": 4,
+        "chance": 5
+      }
+    ],
+    "normal": [
+      {
+        "people": 1,
+        "text": "P1 picks flowers",
+        "deadly": 0,
+        "chance": 60
+      },
+      {
+        "people": 2,
+        "text": "P1 and P2 are talking about jokes",
+        "deadly": 0,
+        "chance": 40
+      },
+      {
+        "people": 3,
+        "text": "P1, P2 and P3 hunt for other survivors.",
+        "deadly": 0,
+        "chance": 15
+      },
+      {
+        "people": 4,
+        "text": "P1, P2, P3 and P4 hunt for other survivors.",
+        "deadly": 0,
+        "chance": 5
+      }
+    ],
+    "start": []
+  },
+  "items": {
+    "Axe": {
+      "type": "weapon",
+      "strength": 1
+    },
+    "Spear": {
+      "type": "weapon",
+      "strength": 2
+    },
+    "Bandages": {
+      "type": "health",
+      "strength": 1
+    }
+  }
+}

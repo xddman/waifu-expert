@@ -1,9 +1,10 @@
 const Discord = require('discord.js');
 const got = require('got');
 const imageManipulation = require("./imageManipulation.js")
+const sqlite3 = require('sqlite3').verbose();
+const sqlite = require('sqlite');
 
-
-module.exports = async function userInfo(msg, args) {
+async function userInfo(msg, args) {
   var query = `
           query ($search: String){
             User(search:$search) {
@@ -67,13 +68,45 @@ module.exports = async function userInfo(msg, args) {
             }
           }
       `;
+  
+      var variables = {
+        search: "asd"
+      };
+  var mentionedAnilist="";
+  if(args.mentioned===true){
+
+    mentionedAnilist=await getAnilistFromDiscordId(args.mentionId);
+    variables = {
+      search: mentionedAnilist
+    };
+
+  }else if(args.arg.match(/^[0-9]+$/) != null){
+    mentionedAnilist=await getAnilistFromDiscordId(args.arg);
+    variables = {
+      search: mentionedAnilist
+    };
+  }else if(args.arg===""&&args.mentioned===false){
+    mentionedAnilist=await getAnilistFromDiscordId(args.authorId);
+    variables = {
+      search: mentionedAnilist
+    };
+  }
+  else{
+
   var name = args.arg.toString();
-  // Define our query variables and values
-  var variables = {
+
+  variables = {
     search: name
   };
+  }
 
-  // Define the config we'll need for our Api request
+  if(mentionedAnilist===null)
+  {
+    if(args.arg===""&&args.mentioned===false)
+      msg.reply("Anilist not set. Set your anilist with &setmyanilist YourAnilistUsername");
+    msg.react("❌");
+    return 0;
+  }
   var url = 'https://graphql.anilist.co';
 
 
@@ -151,4 +184,34 @@ function colorPicker(str) {
   }
   return color;
   // (blue, purple, pink, orange, red, green, gray)
+}
+
+async function getAnilistFromDiscordId(userId) {
+
+  const db = await sqlite.open({
+      filename: __dirname + '/anilist.db',
+      driver: sqlite3.Database
+  });
+
+  var serverIdSQL= userId;
+  var sq = "select anilist_username from anilist_users where discord_id=?";
+  const result = await db.all(sq, [serverIdSQL]);
+  var anilist=null;
+ if(result.length>0) {
+  anilist=result[0].anilist_username
+ }
+
+  
+  db.close();
+  //console.log(filteredRatings);
+  return anilist;
+
+
+
+}
+
+
+module.exports = {
+  userInfo,
+  getAnilistFromDiscordId
 }
