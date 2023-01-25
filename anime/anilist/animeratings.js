@@ -1,16 +1,11 @@
 const Discord = require('discord.js');
-const { Formatters } = require('discord.js');
 const { MessageActionRow, MessageSelectMenu, MessageButton } = require("discord.js");
 require('dotenv').config({ path: __dirname + '/.env' });
 const search = require('./animesearch.js');
 const imageManipulation = require('./imageManipulation.js');
-const followuser = require('./followuser.js');
 const sqlite3 = require('sqlite3').verbose();
 const sqlite = require('sqlite');
-const { filter } = require('domutils');
 const anilistgetuserfollowers= require('./anilistgetuserfollowers.js');
-const { head } = require('request');
-//FONTCONFIG_FILE={ path: __dirname + "/fonts/fonts.conf"};
 
 var pageCache = {};
 var ratingsCache = {};

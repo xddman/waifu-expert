@@ -13,7 +13,8 @@ async function getHelp(msg, command) {
     &rating [Anime Name] - Shows ratings of an anime [Global]
     &myratings [Anime Name] - Show ratings for the users you follow on anilist
     &characters [Anime Name] - Shows top characters from an anime
-    &va [Character Name] - Shows characters voice actor and other roles they had\n
+    &va [Character Name] - Shows characters voice actor and other roles they had
+    &airingmissed - shows airing anime that you are not caught up to\n
     *Tags:*
     By adding a tag you can show info for a manga or a ln.
     Current tags: 

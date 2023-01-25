@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const got = require('got');
 const cheerio = require('cheerio');
-const { data } = require('cheerio/lib/api/attributes');
+//const { data } = require('cheerio/lib/api/attributes');
 const {MessageActionRow, MessageSelectMenu} = require("discord.js");
 require('dotenv').config({ path: __dirname + '/.env' });
 

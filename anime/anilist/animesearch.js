@@ -1,4 +1,3 @@
-const { wrapAll } = require('cheerio/lib/api/manipulation');
 const got = require('got');
 
 async function getAnimeSearch(command) {
