@@ -16,6 +16,7 @@ Commands:
 &setmyanilist [AnilistUsername] - sets user anilist, adds it to sqlite database and bot follows the user on anilist.
 &deletemyanilist - removes users anilist and unfollows them.
 &ratings [Anime] - shows ratings of the specified anime for the users that the bot follows (&setmyanilist).
+&myratings [Anime] - shows rating of the specified anime for the users that the user follows.
 ```
 ![Screenshot](https://i.imgur.com/15qv8T1.png)
 
@@ -37,6 +38,14 @@ Commands:
 &novel [Novel Name] - same as manga just for novels.
 ```
 ![Screenshot](https://i.imgur.com/rZ5OTyc.png)
+
+Tags:
+```
+Commands now support 3 tags: "ln", "m", "a"
+Tags are used by adding a dash after the command and the tag right after ex:
+&ratings-ln [Light Novel]
+&characters-m [Manga]
+```
 
 
 
