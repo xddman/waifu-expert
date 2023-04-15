@@ -290,7 +290,7 @@ async function createUserInfoImage(user, cacheInfo) {
                         width = metadata?.width;
                         height=metadata?.height;
                     image.extract({ width: 770, height: 210, left: 0, top: parseInt(height/2)-105 })
-                    .png()
+                    .webp()
                     .toBuffer()
                     //.toFile('output3.png', (err, info) => { console.log(err + "\n" + info) });
                     .then(async function (outputBuffer2) {
@@ -300,12 +300,12 @@ async function createUserInfoImage(user, cacheInfo) {
                 }else if(heightModified <210){
                     await sharp(Buffer.from(input))
                     .resize({height:210})
-                    .png()
+                    .webp()
                     .toBuffer()
                     .then(function(outputBuffer2){
                         sharp(Buffer.from(outputBuffer2))
                         .extract({ width: 770, height: 210, left:0, top: 0 })
-                        .png()
+                        .webp()
                         .toBuffer()
                         //.toFile('output3.png', (err, info) => { console.log(err + "\n" + info) });
                         .then(async function (outputBuffer2) {
@@ -321,8 +321,8 @@ async function createUserInfoImage(user, cacheInfo) {
 
     image = await sharp(Buffer.from(input));
     metadata = await image.metadata();
-    console.log("aaaaaaa")
-    console.log(metadata);
+    //console.log("aaaaaaa")
+    //console.log(metadata);
     width = metadata?.width;
     height = metadata?.height;
 
@@ -358,7 +358,7 @@ async function createUserInfoImage(user, cacheInfo) {
         left: 0,
 
     }])
-        .jpeg()
+        .webp()
         //.toFile('output.png', (err, info) => { console.log(err + "\n" + info) });
         .toBuffer()
         .then(async function (outputBuffer1) {
@@ -369,7 +369,7 @@ async function createUserInfoImage(user, cacheInfo) {
                 left: 20,
 
             }])
-                .jpeg()
+                .webp()
                 //.toFile('output.png', (err, info) => { console.log(err + "\n" + info) });
                 .toBuffer()
                 .then(function(output){
@@ -419,7 +419,7 @@ async function createUserInfoImage(user, cacheInfo) {
 
     await sharp(Buffer.from(finalBuffer))
         .composite([...animeComposite, ...characterComposite])
-        .jpeg()
+        .webp({quality:60})
         //.toFile('output.png', (err, info) => { console.log(err + "\n" + info) });
         .toBuffer()
         .then(function(output){
