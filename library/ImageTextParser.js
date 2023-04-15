@@ -95,10 +95,11 @@ async function createImage(svgFinal, imageData) {
             width: 770,
             height: 800,
             channels: 4,
-            background: {r: 47, g: 49, b: 54, alpha: 255}
+            background: { r: 43, g: 45, b: 49, alpha: 0 }
         }
     })
-        .jpeg()
+        .ensureAlpha()
+        .png()
         .toBuffer()
         .then(async function (outputBuffer1) {
 

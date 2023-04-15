@@ -21,7 +21,7 @@ async function listMissed(msg, command) {
             driver: sqlite3.Database
         });
 
-
+        responseAllCounter=0;
         var name = command.authorId;
         var counter = 0;
         var sq = "select COUNT(discord_id),anilist_id from anilist_users where discord_id=?";
@@ -39,7 +39,7 @@ async function listMissed(msg, command) {
 
         db.close();
 
-        //userAnilistId = 120786;
+        //userAnilistId = 120786; //dumbass with over 50 anime on his watchlist
         var query = `
         query ( $page: Int) {
             Page(page: $page, perPage:50) {
@@ -95,11 +95,13 @@ async function listMissed(msg, command) {
         var response1 = [];
         //responseAll["data"]["Page"]=[{mediaList:0}];
         responseAll["data"] = { Page: { mediaList: {} } };
-        var response1;
         var currentPage = 1;
         response1["data"] = { Page: { pageInfo: { hasNextPage: true } } };
+        var response=[];
+        response["data"] = { Page: { pageInfo: { hasNextPage: true } } };
 
-        while (response1?.data?.Page?.pageInfo?.hasNextPage) {
+
+        while (response?.data?.Page?.pageInfo?.hasNextPage) {
             var variables = {
                 page: currentPage
             };
@@ -124,11 +126,15 @@ async function listMissed(msg, command) {
                 console.log(exc);
                 console.log(headers);
             }
+            //var responseAll=response;
             response1 = response;
-            responseAll["data"]["Page"]["mediaList"] = {
-                ...responseAll["data"]["Page"]["mediaList"],
-                ...response["data"]["Page"]["mediaList"]
-            };
+            //responseAll["data"]["Page"]["mediaList"] = {...responseAll["data"]["Page"]["mediaList"],...response1["data"]["Page"]["mediaList"]};
+            var currentItem=0;
+            await response["data"]["Page"]["mediaList"].forEach(item => {
+                responseAll["data"]["Page"]["mediaList"][responseAllCounter]=item;
+                responseAllCounter++;
+            });
+            //merges and replaces first grab
 
             currentPage++;
         }
@@ -169,16 +175,16 @@ async function listMissed(msg, command) {
 
 
         //var buffer = await imageTextParser.parseText(formattedObject,imageData);
-        var attachment = await new Discord.MessageAttachment(buffer, 'image.png');
+        var attachment = await new Discord.MessageAttachment(buffer, 'image.webp');
 
 
         if (formattedObject[0]?.length < 1)
             airingListSorted = "None";
 
         const exampleEmbed = new Discord.MessageEmbed()
-            .setURL('https://discord.js.org/')
+            .setURL('https://waifu.expert/')
             .setAuthor({ name: "Airing Animes from " + command.authorUsername + "" })
-            .setImage('attachment://image.png')
+            .setImage('attachment://image.webp')
             .setFooter({ text: '&setmyanilist YourAnilist / &deletemyanilist' });
 
 

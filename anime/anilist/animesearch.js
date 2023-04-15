@@ -26,7 +26,7 @@ async function getAnimeSearch(command) {
               hasNextPage
               perPage
             }
-            media (search: $search, type:`+mediaType+`) {
+            media (search: $search, type:`+mediaType+`, isAdult: false) {
                     id
                     bannerImage
                     siteUrl

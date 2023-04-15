@@ -360,7 +360,7 @@ async function getRatings(msg, command, anime, currentPage) {
 
 
     var buffer = await imageManipulation.createRatingsImage(svg, coverImage);
-    var attachment = await new Discord.MessageAttachment(buffer, 'image.png');
+    var attachment = await new Discord.MessageAttachment(buffer, 'image.webp');
 
 
 
@@ -396,7 +396,7 @@ async function getRatings(msg, command, anime, currentPage) {
     const exampleEmbed = new Discord.MessageEmbed()
         .setURL('https://discord.js.org/')
         .setAuthor({ name: "Ratings of " + anime.title, url: anime.siteUrl })
-        .setImage('attachment://image.png')
+        .setImage('attachment://image.webp')
         .setFooter({ text: 'Page ' + currentPage + '/' + Pages + ' - &setmyanilist YourAnilist / &deletemyanilist' })
 
     var sent;

@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const got = require('got');
 const imageManipulation = require("./imageManipulation.js")
+const anilistcaching = require("./anilistcaching.js")
 const sqlite3 = require('sqlite3').verbose();
 const sqlite = require('sqlite');
 
@@ -122,21 +123,52 @@ async function userInfo(msg, args) {
     responseType: 'json'
   }).json();
 
+///=====================================
+//anilistcaching
 
+var hash2="";
+var hash1="";
+hash2=""+response.data.User.avatar.medium+response.data.User.bannerImage+response.data.User.favourites+response.data.User.options.profileColor+response.data.User.name;
+hash1=""+hash2+response.data.User.statistics.anime.minutesWatched+response.data.User.statistics.manga.chaptersRead+response.data.User.statistics.manga.count+response.data.User.statistics.anime.meanScore+response.data.User.statistics.anime.count;
 
-  var buffer = await imageManipulation.createUserInfoImage(response).catch((Exception) => { console.log(Exception) });
-  var attachment = await new Discord.MessageAttachment(buffer, 'image1.png');
-
+  var anilistid= response.data?.User.id;
   var color1 = await colorPicker(response.data.User?.options?.profileColor);
   console.log(response.data.User?.options?.profileColor);
   const exampleEmbed = new Discord.MessageEmbed()
     .setURL('https://discord.js.org/')
     .setAuthor({ name: "" + response.data?.User?.name, url: "" + response.data?.User?.siteUrl })
-    .setImage('attachment://image1.png')
     .setColor(color1)
 
+    var cacheStatus = await anilistcaching.cacheAnilistCommandCheck(args, hash1, hash2, msg,anilistid);
+    var cacheInfo=[];
+    cacheInfo["halfCache"]=cacheStatus["cache"];
+  switch (cacheStatus["status"]) {
+    case "full":
+      var attachment = await new Discord.MessageAttachment(cacheStatus["cache"], 'image1.webp');
+      exampleEmbed.setImage('attachment://image1.webp');
+      console.log("pre-cached fully");
+      return await msg.channel.send({ embeds: [exampleEmbed],files: [attachment] });
+    case "half":
+      cacheInfo["type"]="half";
+      var buffer = await imageManipulation.createUserInfoImage(response, cacheInfo).catch((Exception) => { console.log(Exception) });
+      var cacheFull=buffer["finalBuffer"]; var cacheHalf=buffer["halfBuffer"];
+      await anilistcaching.addAnilistCacheToDatabase(args, msg, cacheStatus["hashFull"], cacheStatus["hashHalf"], cacheFull, cacheHalf, cacheStatus["status"], anilistid);
+      var attachment = await new Discord.MessageAttachment(buffer["finalBuffer"], 'image1.webp');
+      exampleEmbed.setImage('attachment://image1.webp');
+      return await msg.channel.send({ embeds: [exampleEmbed], files: [attachment] });
+    default:
+      cacheInfo["type"]="none";
+      var buffer = await imageManipulation.createUserInfoImage(response,cacheInfo).catch((Exception) => { console.log(Exception) });
+      var cacheFull=buffer["finalBuffer"]; var cacheHalf=buffer["halfBuffer"];
+      await anilistcaching.addAnilistCacheToDatabase(args, msg, cacheStatus["hashFull"], cacheStatus["hashHalf"], cacheFull, cacheHalf, cacheStatus["status"], anilistid);
 
-  return await msg.channel.send({ embeds: [exampleEmbed], files: [attachment] });
+
+
+      var attachment = await new Discord.MessageAttachment(buffer["finalBuffer"], 'image1.webp');
+      exampleEmbed.setImage('attachment://image1.webp');
+      return await msg.channel.send({ embeds: [exampleEmbed], files: [attachment] });
+  }
+  
 
 
 

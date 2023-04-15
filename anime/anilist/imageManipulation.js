@@ -24,7 +24,7 @@ async function createRatingsImage(svgFinal, coverImage) {
                     width: 770,
                     height: 800,
                     channels: 4,
-                    background: { r: 47, g: 49, b: 54, alpha: 255 }
+                    background: { r: 47, g: 49, b: 54, alpha: 0 }
                 }
             }).composite([{
                 input: Buffer.from(outputBuffer),
@@ -32,7 +32,7 @@ async function createRatingsImage(svgFinal, coverImage) {
                 left: 5,
 
             }])
-                .jpeg()
+                .webp()
                 .toBuffer()
                 .then(async function (outputBuffer1) {
 
@@ -42,7 +42,8 @@ async function createRatingsImage(svgFinal, coverImage) {
                             top: 10,
                             left: 0,
                         }])
-                        .png()
+                        //.png()
+                        .webp({loseless: false, quality:60})
                         .toBuffer()
                         .then(async function (outputBuffer2) {
                             sharpStream = outputBuffer2;
@@ -76,7 +77,7 @@ async function createCharactersImage(characters, response) {
                     width: 770,
                     height: 800,
                     channels: 4,
-                    background: { r: 47, g: 49, b: 54, alpha: 255 }
+                    background: { r: 47, g: 49, b: 54, alpha: 0 }
                 }
             }).composite([{
                 input: Buffer.from(outputBuffer),
@@ -84,7 +85,7 @@ async function createCharactersImage(characters, response) {
                 left: 5,
 
             }])
-                .jpeg()
+                .webp({quality:60})
                 //.toFile('output.png', (err, info) => { console.log(err + "\n" + info) });
                 .toBuffer()
                 .then(async function (outputBuffer1) {
@@ -170,7 +171,7 @@ async function createCharactersImage(characters, response) {
                         left: 5 + leftPadding,
 
                     }])
-                    .jpeg()
+                    .webp({quality:60})
                     //.toFile('output.png', (err, info) => { console.log(err + "\n" + info) });
                     .toBuffer()
                     .then(async function (outputBuffer1) {
@@ -223,7 +224,7 @@ async function createCharactersImage(characters, response) {
             left: 1,
 
         }])
-        .png()
+        .webp({quality:60})
         //.toFile('output1.png', (err, info) => { console.log(err + "\n" + info) });
         .toBuffer()
         .then(async function (outputBuffer1) {
@@ -251,14 +252,18 @@ async function createCharactersImage(characters, response) {
 
 }
 
-async function createUserInfoImage(user) {
+async function createUserInfoImage(user, cacheInfo) {
     //let width = 770;
     //let height = 800;
     var j = 260;
     var finalBuffer;
     var svg = `<svg width="770" height="800">`;
     var bannerBuffer;
+    var finalBufferMulti=[];
 
+
+
+    if(cacheInfo["type"]==="none"){
     var url = user.data?.User?.bannerImage;
     if (!url?.includes("http")) { url = "https://i.imgur.com/JHLAEGP.png"; }
 
@@ -311,29 +316,6 @@ async function createUserInfoImage(user) {
 
                 }
             
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     url=user.data.User.avatar.medium;
     input = (await axios({ url: url, responseType: "arraybuffer" })).data;
 
@@ -395,72 +377,65 @@ async function createUserInfoImage(user) {
                 })
         })
 
+    const favoriteAnimeP = Promise.all(user.data?.User?.favourites?.anime?.edges.map(async edge => {
+        url=edge.node?.coverImage?.medium;
 
-        for(let i=0; i<user.data?.User?.favourites?.anime?.edges?.length;i++){
-            url=user.data.User?.favourites?.anime?.edges[i]?.node?.coverImage?.medium;
-            input = (await axios({ url: url, responseType: "arraybuffer" })).data;
-
-            await sharp(Buffer.from(finalBuffer))
-            .composite([{
-                input: Buffer.from(input),
-                top: 350,
-                left: 25+(i*150),
-
-            }])
-                .jpeg()
-                //.toFile('output.png', (err, info) => { console.log(err + "\n" + info) });
-                .toBuffer()
-                .then(function(output){
-                    finalBuffer=output;
-                })
-
-
-
-
+        if (!url) {
+            return;
         }
 
+        input = (await axios({ url: url, responseType: "arraybuffer" })).data;
 
+        return input;
+    }));
 
-        for(let i=0; i<user.data?.User?.favourites?.characters?.edges.length;i++){
-            url=user.data.User?.favourites?.characters?.edges[i]?.node?.image?.medium;
+    const favoriteCharacterP = Promise.all(user.data?.User?.favourites?.characters?.edges.map(async edge => {
+        url=edge?.node?.image?.medium;
 
-            input = (await axios({ url: url, responseType: "arraybuffer" })).data;
-
-            await sharp(Buffer.from(finalBuffer))
-            .composite([{
-                input: Buffer.from(input),
-                top: 550,
-                left: 25+(i*150),
-
-            }])
-                .jpeg()
-                //.toFile('output.png', (err, info) => { console.log(err + "\n" + info) });
-                .toBuffer()
-                .then(function(output){
-                    finalBuffer=output;
-                })
-
-
-
-
-
+        if (!url) {
+            return;
         }
 
+        input = (await axios({ url: url, responseType: "arraybuffer" })).data;
 
+        return input;
+    }));
 
+    console.time('anilist');
 
+    const [favoriteAnime, favoriteCharacter] = await Promise.all([favoriteAnimeP, favoriteCharacterP]);
 
+    const animeComposite = favoriteAnime.map((a, i) => ({
+        input: a,
+        top: 350,
+        left: 25 + (i * 150)
+    }));
 
+    const characterComposite = favoriteCharacter.map((a, i) => ({
+        input: a,
+        top: 550,
+        left: 25 + (i * 150)
+    }));
 
+    await sharp(Buffer.from(finalBuffer))
+        .composite([...animeComposite, ...characterComposite])
+        .jpeg()
+        //.toFile('output.png', (err, info) => { console.log(err + "\n" + info) });
+        .toBuffer()
+        .then(function(output){
+            finalBuffer=output;
+        })
 
-       /* for(let i=0; i<user.data?.User?.statistics?.anime?.genres?.length;i++){
-            var genres=user.data?.User?.statistics?.anime?.genres[i];
-
-        }
-        for(let i=0; i<user.data?.User?.statistics?.anime?.tags?.length;i++){
-            var tags=user.data?.User?.statistics?.anime?.tags[i];
-
-        }*/
+        
+        halfBuffer=finalBuffer;
+        finalBufferMulti["halfBuffer"]=halfBuffer;
+        console.log("no cache");
+        console.timeEnd('anilist');
+    }else{
+        finalBuffer=cacheInfo["halfCache"];
+        finalBufferMulti["halfBuffer"]=finalBuffer;
+        console.log("half cached");
+    }
 
 
 
@@ -514,7 +489,7 @@ async function createUserInfoImage(user) {
             left: 1,
 
         }])
-        .png()
+        .webp({ lossless: false, quality: 60 })
         //.toFile('output1.png', (err, info) => { console.log(err + "\n" + info) });
         .toBuffer()
         .then(async function (outputBuffer1) {
@@ -522,11 +497,13 @@ async function createUserInfoImage(user) {
         })
 
 
+        finalBufferMulti["finalBuffer"]=finalBuffer;
+        
 
 
 
 
-    return finalBuffer;
+    return finalBufferMulti;
 
 
 

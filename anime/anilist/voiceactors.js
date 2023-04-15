@@ -1,3 +1,4 @@
+const { arrayOfArray } = require('assert-plus');
 const Discord = require('discord.js');
 const {MessageActionRow, MessageSelectMenu} = require("discord.js");
 require('dotenv').config({path: __dirname+'/.env'});
@@ -103,7 +104,24 @@ async function getCharacters(msg, responseReturn, id){
         }).json();
       } else {
         response = responseReturn;
-      }
+      } 
+
+          var z=0;
+          response.data.Page.characters.forEach(characters => {
+            
+            console.log(characters?.media?.edges[0]?.voiceActors[0]?.name?.full);
+            if(characters?.media?.edges[0]?.voiceActors[0]?.name?.full){
+              
+            }else{
+              response.data.Page.characters.splice(z, 1);
+            }
+            z++;
+        });
+
+
+
+
+
 
           console.log(""+response.data.Page.characters[sIndex]["name"]["userPreferred"]);
           

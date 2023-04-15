@@ -81,18 +81,11 @@ imageData["ColumnSize"]={0:50,1:20,2:20,3:5};
 //
 async function createImage(svgFinal, urlObj, imageData) {
 
-
     var finalBuffer;
     var url = "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx135806-NwyVfDvm0O3G.jpg";
-    await sharp({
-        create: {
-            width: 770,
-            height: 800,
-            channels: 4,
-            background: {r: 47, g: 49, b: 54, alpha: 255}
-        }
-    })
-        .png()
+    //var filepath={ path: __dirname + '/background.png'};
+    await sharp(__dirname+'/background.png')
+        .webp()
         .toBuffer()
         .then(async function (outputBuffer1) {
             finalBuffer = outputBuffer1;
@@ -149,18 +142,19 @@ async function createImage(svgFinal, urlObj, imageData) {
 async function svgMerge(svgFinal, buffer) {
 
     var finalBuffer=buffer;
-
+    svgFinal = svgFinal.replace('&','');
     await sharp(Buffer.from(finalBuffer))
         .composite([{
             input: Buffer.from(svgFinal),
             top: 0,
             left: 0,
         }])
-        .png()
+        .webp({quality:60})
         .toBuffer()
         .then(function(output){
             finalBuffer=output;
-        })/*
+        });
+        /*
         .toFile('output.png', (err, info) => {
             console.log(err + "\n" + info)
         });*/

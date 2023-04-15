@@ -122,13 +122,13 @@ async function getCharacterList(msg, args) {
  
 
   var buffer = await imageManipulation.createCharactersImage(characters, response);
-  var attachment = new Discord.MessageAttachment(buffer, 'image.png');
+  var attachment = new Discord.MessageAttachment(buffer, 'image.webp');
 
 
   const exampleEmbed = new Discord.MessageEmbed()
   .setURL('https://discord.js.org/')
   .setAuthor({ name: ""+response.data.Media.title.userPreferred, url: ""+response.data.Media.siteUrl })
-  .setImage('attachment://image.png')
+  .setImage('attachment://image.webp')
 
 
   return await msg.channel.send({ embeds: [exampleEmbed],files: [attachment] });
